@@ -16,6 +16,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity implements WifiP2pManager.PeerListListener {
 
     WifiP2pManager mManager;
@@ -23,7 +25,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
     BroadcastReceiver mReceiver;
     IntentFilter mIntentFilter;
     Button btnDiscoverPeers, btnSendHello;
-    WifiP2pDevice[] devices = null;
+    ArrayList<WifiP2pDevice> devices = null;
     WifiP2pDevice connectedDevice = null;
 
     @Override
@@ -82,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
 
             @Override
             public void onFailure(int reasonCode) {
-                makeText("failure");
+                makeText("failure : " + reasonCode);
             }
         });
     }
@@ -97,13 +99,14 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
 
     @Override
     public void onPeersAvailable(WifiP2pDeviceList wifiP2pDeviceList) {
-        CharSequence[] devicesChar = new CharSequence[]{};
+        devices = new ArrayList<>();
+        CharSequence[] devicesChar;
 
         if (wifiP2pDeviceList.getDeviceList().size() > 0) {
-            devices = (WifiP2pDevice[]) wifiP2pDeviceList.getDeviceList().toArray();
-
-            for (int i = 0; i < devices.length; i++) {
-                devicesChar[i] = devices[i].toString();
+            devices.addAll(wifiP2pDeviceList.getDeviceList());
+            devicesChar = new CharSequence[devices.size()];
+            for (int i = 0; i < devices.size(); i++) {
+                devicesChar[i] = devices.get(i).toString();
             }
 
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(MainActivity.this);
@@ -111,8 +114,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Pe
             alertDialogBuilder.setItems(devicesChar, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    if (i > 0 && i < devices.length) {
-                        connectToPeer(devices[i]);
+                    if (i > 0 && i < devices.size()) {
+                        connectToPeer(devices.get(i));
                     }
                 }
             });
